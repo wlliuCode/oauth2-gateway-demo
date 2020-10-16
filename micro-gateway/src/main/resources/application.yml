@@ -1,0 +1,50 @@
+server:
+  port: 7903
+spring:
+  application:
+    name: micro-gateway
+  datasource:
+    druid:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      username: root
+      password: 123456
+      url: jdbc:mysql:///test?serverTimezone=UTC
+  cloud:
+    gateway:
+      routes:
+        - id: micro-api
+          uri: lb://micro-api
+          order: 1
+          predicates:
+            - Path=/api/**
+          filters:
+            - StripPrefix=1
+        - id: micro-auth
+          uri: lb://micro-auth
+          order: 1
+          predicates:
+            - Path=/auth/**
+          filters:
+            - StripPrefix=1
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: 'http://localhost:7902/rsa/publicKey' #配置RSA的公钥访问地址
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+secure:
+  ignore:
+    urls:
+      - "/auth/oauth/**"
+      - "/login"
+      - "/*/login"
+      #- "/**"
